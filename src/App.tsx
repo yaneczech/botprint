@@ -13,6 +13,17 @@ function App() {
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null)
   const [labelSize, setLabelSize] = useState<LabelSize>(LABEL_SIZES[6]) // Default: 40×30mm
 
+  const handleLandscapeToggle = () => {
+    setLabelSize({
+      ...labelSize,
+      width: labelSize.height,
+      height: labelSize.width,
+      widthPx: labelSize.heightPx,
+      heightPx: labelSize.widthPx,
+      landscape: !labelSize.landscape,
+    })
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Left Sidebar - Tools */}
@@ -30,6 +41,7 @@ function App() {
             <LabelSizeSelect
               currentSize={labelSize}
               onSizeChange={setLabelSize}
+              onLandscapeToggle={handleLandscapeToggle}
             />
           </div>
         </div>
@@ -45,17 +57,19 @@ function App() {
       </div>
 
       {/* Right Panels */}
-      <div className="flex">
+      <div className="flex flex-shrink-0">
         {/* Properties Panel */}
-        <div className="w-64 bg-white border-l border-gray-200">
+        <div className="w-64 bg-white border-l border-gray-200 flex-shrink-0 overflow-y-auto">
           <PropertiesPanel canvas={canvas} />
         </div>
 
         {/* Printer Panel */}
-        <PrinterPanel
-          connected={printerConnected}
-          onConnectionChange={setPrinterConnected}
-        />
+        <div className="flex-shrink-0">
+          <PrinterPanel
+            connected={printerConnected}
+            onConnectionChange={setPrinterConnected}
+          />
+        </div>
       </div>
     </div>
   )

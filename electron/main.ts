@@ -95,14 +95,31 @@ ipcMain.handle('system:getFonts', async () => {
     let fonts: string[] = []
 
     if (platform === 'darwin') {
-      // macOS
-      const { stdout } = await execAsync('system_profiler SPFontsDataType -json')
-      const data = JSON.parse(stdout)
-      const fontData = data.SPFontsDataType || []
-      fonts = fontData
-        .map((font: any) => font._name || font.name)
-        .filter((name: string) => name && !name.startsWith('.'))
-        .sort()
+      // macOS - use simpler command that works in both dev and prod
+      try {
+        const { stdout } = await execAsync('fc-list : family | sort -u')
+        fonts = stdout
+          .split('\n')
+          .map(line => {
+            // Handle font families with multiple names (e.g., "Font Name,Font Name Alternative")
+            return line.split(',')[0].trim()
+          })
+          .filter(name => name.length > 0 && !name.startsWith('.'))
+          .filter((name, index, self) => self.indexOf(name) === index) // Remove duplicates
+          .sort()
+      } catch (fcError) {
+        console.log('fc-list failed, trying alternative method')
+        // Fallback: read from Font Book directories
+        const { stdout: lsOutput } = await execAsync(
+          'ls /Library/Fonts ~/Library/Fonts /System/Library/Fonts 2>/dev/null | grep -E "\\.(ttf|otf)$" | sed "s/\\.[^.]*$//" | sort -u'
+        )
+        fonts = lsOutput
+          .split('\n')
+          .map(line => line.trim().replace(/[-_]/g, ' '))
+          .filter(name => name.length > 0)
+          .filter((name, index, self) => self.indexOf(name) === index)
+          .sort()
+      }
     } else if (platform === 'win32') {
       // Windows
       const { stdout } = await execAsync('powershell "Get-ItemProperty -Path \\"HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts\\" | Select-Object -ExpandProperty PSChildName"')
@@ -117,12 +134,19 @@ ipcMain.handle('system:getFonts', async () => {
       const { stdout } = await execAsync('fc-list : family | sort -u')
       fonts = stdout
         .split('\n')
-        .map(line => line.trim())
+        .map(line => line.split(',')[0].trim())
         .filter(name => name.length > 0)
         .sort()
     }
 
-    return fonts
+    return fonts.length > 0 ? fonts : [
+      'Arial',
+      'Helvetica',
+      'Times New Roman',
+      'Courier New',
+      'Georgia',
+      'Verdana',
+    ]
   } catch (error) {
     console.error('Error getting system fonts:', error)
     // Return fallback fonts

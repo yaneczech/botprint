@@ -136,12 +136,27 @@ export default function LabelDesigner({ selectedTool, onCanvasReady, labelSize }
   const handleAddText = () => {
     if (!fabricRef.current) return
 
+    // Position text relative to canvas size (center-ish but visible)
+    const canvasWidth = fabricRef.current.width || 384
+    const canvasHeight = fabricRef.current.height || 240
+
     const text = new fabric.IText('Text', {
-      left: 100,
-      top: 100,
-      fontSize: 24,
+      left: Math.min(canvasWidth * 0.2, canvasWidth - 100),
+      top: Math.min(canvasHeight * 0.2, canvasHeight - 50),
+      fontSize: Math.min(24, canvasHeight * 0.15),
       fill: '#000000',
       fontFamily: 'Arial',
+      lockScalingFlip: true, // Prevent flipping
+      lockUniScaling: false, // Allow non-uniform scaling initially
+    })
+
+    // Add listener to lock aspect ratio after first scale
+    text.on('scaling', function() {
+      if (this.scaleX !== this.scaleY) {
+        // Lock to uniform scaling to prevent text deformation
+        const scale = Math.max(this.scaleX || 1, this.scaleY || 1)
+        this.set({ scaleX: scale, scaleY: scale })
+      }
     })
 
     fabricRef.current.add(text)
@@ -151,15 +166,18 @@ export default function LabelDesigner({ selectedTool, onCanvasReady, labelSize }
   const handleAddRectangle = () => {
     if (!fabricRef.current) return
 
+    const canvasWidth = fabricRef.current.width || 384
+    const canvasHeight = fabricRef.current.height || 240
+
     const rect = new fabric.Rect({
-      left: 100,
-      top: 100,
-      width: 100,
-      height: 60,
+      left: Math.min(canvasWidth * 0.2, canvasWidth - 120),
+      top: Math.min(canvasHeight * 0.2, canvasHeight - 80),
+      width: Math.min(100, canvasWidth * 0.4),
+      height: Math.min(60, canvasHeight * 0.3),
       fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 2,
-      strokeUniform: true, // Prevents stroke from scaling with object
+      strokeUniform: true,
     })
 
     fabricRef.current.add(rect)
@@ -169,14 +187,17 @@ export default function LabelDesigner({ selectedTool, onCanvasReady, labelSize }
   const handleAddCircle = () => {
     if (!fabricRef.current) return
 
+    const canvasWidth = fabricRef.current.width || 384
+    const canvasHeight = fabricRef.current.height || 240
+
     const circle = new fabric.Circle({
-      left: 100,
-      top: 100,
-      radius: 50,
+      left: Math.min(canvasWidth * 0.2, canvasWidth - 100),
+      top: Math.min(canvasHeight * 0.2, canvasHeight - 100),
+      radius: Math.min(50, Math.min(canvasWidth, canvasHeight) * 0.2),
       fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 2,
-      strokeUniform: true, // Prevents stroke from scaling with object
+      strokeUniform: true,
     })
 
     fabricRef.current.add(circle)

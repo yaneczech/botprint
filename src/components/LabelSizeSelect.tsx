@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react'
+import { Settings, RotateCw } from 'lucide-react'
 import { useState } from 'react'
 
 interface LabelSize {
@@ -7,11 +7,13 @@ interface LabelSize {
   height: number // in mm
   widthPx: number  // in pixels at 203 DPI (Niimbot standard)
   heightPx: number
+  landscape?: boolean
 }
 
 interface LabelSizeSelectProps {
   onSizeChange: (size: LabelSize) => void
   currentSize: LabelSize
+  onLandscapeToggle?: () => void
 }
 
 // Common Niimbot label sizes (in mm) at 203 DPI
@@ -30,8 +32,15 @@ const LABEL_SIZES: LabelSize[] = [
   { name: '50×80mm (Extra velké)', width: 50, height: 80, widthPx: 400, heightPx: 640 },
 ]
 
-export default function LabelSizeSelect({ onSizeChange, currentSize }: LabelSizeSelectProps) {
+export default function LabelSizeSelect({ onSizeChange, currentSize, onLandscapeToggle }: LabelSizeSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
+
+  const handleLandscapeToggle = () => {
+    if (onLandscapeToggle) {
+      onLandscapeToggle()
+    }
+    setIsOpen(false)
+  }
 
   const handleSizeSelect = (size: LabelSize) => {
     onSizeChange(size)
@@ -39,7 +48,18 @@ export default function LabelSizeSelect({ onSizeChange, currentSize }: LabelSize
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-2">
+      {onLandscapeToggle && (
+        <button
+          onClick={handleLandscapeToggle}
+          className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5 border border-gray-300"
+          title="Otočit na landscape/portrait"
+        >
+          <RotateCw size={16} />
+          {currentSize.landscape ? 'Landscape' : 'Portrait'}
+        </button>
+      )}
+
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5 border border-gray-300"

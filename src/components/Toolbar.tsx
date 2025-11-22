@@ -127,17 +127,17 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
             <button
               onClick={handleImportImage}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Importovat obrázek/SVG"
             >
-              <Image size={16} /> Importovat obrázek
+              <Image size={18} /> <span>Importovat obrázek</span>
             </button>
             <button
               onClick={() => setShowExcelImporter(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Importovat z Excelu"
             >
-              <FileSpreadsheet size={16} /> Import z Excelu
+              <FileSpreadsheet size={18} /> <span>Import z Excelu</span>
             </button>
           </div>
 
@@ -145,10 +145,10 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1">
             <button
               onClick={() => setShowFontManager(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Správa fontů"
             >
-              <TypeIcon size={16} /> Fonty
+              <TypeIcon size={18} /> <span>Fonty</span>
             </button>
           </div>
         </div>
