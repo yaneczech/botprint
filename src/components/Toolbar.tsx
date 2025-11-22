@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, FolderOpen, Save, Type, Square, Circle, Image, FileSpreadsheet, TypeIcon } from 'lucide-react'
+import { FileText, FolderOpen, Save, Image, FileSpreadsheet, TypeIcon } from 'lucide-react'
 import ExcelImporter from './ExcelImporter'
 import FontManager from './FontManager'
 
@@ -54,101 +54,70 @@ export default function Toolbar() {
     input.click()
   }
 
-  const handleAddText = () => {
-    ;(window as any).labelDesigner?.addText()
-  }
-
-  const handleAddRectangle = () => {
-    ;(window as any).labelDesigner?.addRectangle()
-  }
-
-  const handleAddCircle = () => {
-    ;(window as any).labelDesigner?.addCircle()
-  }
-
   const handleImportImage = () => {
     ;(window as any).labelDesigner?.importImage()
   }
 
   return (
     <>
-      <div className="flex items-center space-x-2 flex-1">
+      <div className="flex items-center gap-3 flex-1">
           {/* File operations */}
-          <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
+          <div className="flex items-center gap-1 border-r border-gray-300 pr-3">
             <button
               onClick={handleNew}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Nový"
             >
-              <FileText size={16} /> Nový
+              <FileText size={18} />
+              <span>Nový</span>
             </button>
             <button
               onClick={handleLoad}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Otevřít"
             >
-              <FolderOpen size={16} /> Otevřít
+              <FolderOpen size={18} />
+              <span>Otevřít</span>
             </button>
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Uložit"
             >
-              <Save size={16} /> Uložit
-            </button>
-          </div>
-
-          {/* Add elements */}
-          <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
-            <button
-              onClick={handleAddText}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
-              title="Přidat text"
-            >
-              <Type size={16} /> Text
-            </button>
-            <button
-              onClick={handleAddRectangle}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
-              title="Přidat obdélník"
-            >
-              <Square size={16} /> Obdélník
-            </button>
-            <button
-              onClick={handleAddCircle}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
-              title="Přidat kruh"
-            >
-              <Circle size={16} /> Kruh
+              <Save size={18} />
+              <span>Uložit</span>
             </button>
           </div>
 
           {/* Import */}
-          <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
+          <div className="flex items-center gap-1 border-r border-gray-300 pr-3">
             <button
               onClick={handleImportImage}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Importovat obrázek/SVG"
             >
-              <Image size={18} /> <span>Importovat obrázek</span>
+              <Image size={20} />
+              <span>Importovat obrázek</span>
             </button>
             <button
               onClick={() => setShowExcelImporter(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Importovat z Excelu"
             >
-              <FileSpreadsheet size={18} /> <span>Import z Excelu</span>
+              <FileSpreadsheet size={20} />
+              <span>Import z Excelu</span>
             </button>
           </div>
 
           {/* Fonts */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center">
             <button
               onClick={() => setShowFontManager(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+              className="px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
               title="Správa fontů"
             >
-              <TypeIcon size={18} /> <span>Fonty</span>
+              <TypeIcon size={18} />
+              <span>Fonty</span>
             </button>
           </div>
         </div>

@@ -75,7 +75,7 @@ export default function LabelSizeSelect({ onSizeChange, currentSize, onLandscape
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute left-0 mt-1 w-72 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
+          <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
             <div className="p-2">
               <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">
                 Velikosti štítků Niimbot

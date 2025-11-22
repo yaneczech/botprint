@@ -91,8 +91,8 @@ export default function PrinterPanel({ connected, onConnectionChange }: PrinterP
   }
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto">
-      <h2 className="text-lg font-bold mb-4">Tiskárna</h2>
+    <div className="p-4">
+      <h3 className="text-sm font-bold mb-3">Tiskárna</h3>
 
       {!connected ? (
         <div className="space-y-4">

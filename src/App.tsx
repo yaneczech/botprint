@@ -3,7 +3,6 @@ import { fabric } from 'fabric'
 import LabelDesigner from './components/LabelDesigner'
 import Toolbar from './components/Toolbar'
 import Sidebar from './components/Sidebar'
-import PrinterPanel from './components/PrinterPanel'
 import PropertiesPanel from './components/PropertiesPanel'
 import LabelSizeSelect, { LABEL_SIZES, type LabelSize } from './components/LabelSizeSelect'
 
@@ -56,20 +55,13 @@ function App() {
         </div>
       </div>
 
-      {/* Right Panels */}
-      <div className="flex flex-shrink-0">
-        {/* Properties Panel */}
-        <div className="w-64 bg-white border-l border-gray-200 flex-shrink-0 overflow-y-auto">
-          <PropertiesPanel canvas={canvas} />
-        </div>
-
-        {/* Printer Panel */}
-        <div className="flex-shrink-0">
-          <PrinterPanel
-            connected={printerConnected}
-            onConnectionChange={setPrinterConnected}
-          />
-        </div>
+      {/* Right Panel - Properties & Printer */}
+      <div className="w-80 bg-white border-l border-gray-200 flex-shrink-0 flex flex-col">
+        <PropertiesPanel
+          canvas={canvas}
+          printerConnected={printerConnected}
+          onPrinterConnectionChange={setPrinterConnected}
+        />
       </div>
     </div>
   )

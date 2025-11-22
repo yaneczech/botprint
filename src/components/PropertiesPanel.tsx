@@ -9,12 +9,15 @@ import {
   Italic,
   Underline
 } from 'lucide-react'
+import PrinterPanel from './PrinterPanel'
 
 interface PropertiesPanelProps {
   canvas: fabric.Canvas | null
+  printerConnected: boolean
+  onPrinterConnectionChange: (connected: boolean) => void
 }
 
-export default function PropertiesPanel({ canvas }: PropertiesPanelProps) {
+export default function PropertiesPanel({ canvas, printerConnected, onPrinterConnectionChange }: PropertiesPanelProps) {
   const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null)
   const [objectType, setObjectType] = useState<string>('')
 
@@ -34,21 +37,33 @@ export default function PropertiesPanel({ canvas }: PropertiesPanelProps) {
   const [strokeWidth, setStrokeWidth] = useState(2)
 
   // System fonts
-  const systemFonts = [
+  const [systemFonts, setSystemFonts] = useState<string[]>([
     'Arial',
     'Helvetica',
     'Times New Roman',
     'Courier New',
     'Georgia',
     'Verdana',
-    'Trebuchet MS',
-    'Impact',
-    'Comic Sans MS',
-    'Palatino',
-    'Garamond',
-    'Bookman',
-    'Avant Garde',
-  ]
+  ])
+  const [loadingFonts, setLoadingFonts] = useState(true)
+
+  // Load system fonts on mount
+  useEffect(() => {
+    const loadSystemFonts = async () => {
+      try {
+        setLoadingFonts(true)
+        const fontNames = await window.electronAPI.system.getFonts()
+        setSystemFonts(fontNames)
+      } catch (error) {
+        console.error('Error loading system fonts:', error)
+        // Keep default fallback fonts
+      } finally {
+        setLoadingFonts(false)
+      }
+    }
+
+    loadSystemFonts()
+  }, [])
 
   useEffect(() => {
     if (!canvas) return
@@ -105,16 +120,14 @@ export default function PropertiesPanel({ canvas }: PropertiesPanelProps) {
     canvas.renderAll()
   }
 
-  if (!selectedObject) {
-    return (
-      <div className="p-4 text-gray-500 text-sm">
-        Vyberte objekt pro úpravu vlastností
-      </div>
-    )
-  }
-
   return (
-    <div className="p-4 space-y-4 overflow-y-auto">
+    <div className="h-full flex flex-col">
+      {!selectedObject ? (
+        <div className="p-4 text-gray-500 text-sm">
+          Vyberte objekt pro úpravu vlastností
+        </div>
+      ) : (
+        <div className="p-4 space-y-4 overflow-y-auto flex-1">
       <h3 className="font-bold text-sm mb-4">Vlastnosti</h3>
 
       {/* Text properties */}
@@ -391,6 +404,16 @@ export default function PropertiesPanel({ canvas }: PropertiesPanelProps) {
           </div>
         </>
       )}
+        </div>
+      )}
+
+      {/* Printer Panel - always visible at bottom */}
+      <div className="border-t border-gray-200">
+        <PrinterPanel
+          connected={printerConnected}
+          onConnectionChange={onPrinterConnectionChange}
+        />
+      </div>
     </div>
   )
 }
