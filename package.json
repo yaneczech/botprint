@@ -1,0 +1,82 @@
+{
+  "name": "niimbot-printer-app",
+  "version": "1.0.0",
+  "description": "Cross-platform desktop application for Niimbot label printers",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && electron-builder",
+    "build:mac": "tsc && vite build && electron-builder --mac",
+    "build:win": "tsc && vite build && electron-builder --win",
+    "build:linux": "tsc && vite build && electron-builder --linux",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "niimbot",
+    "printer",
+    "label",
+    "bluetooth",
+    "electron"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "fabric": "^5.3.0",
+    "xlsx": "^0.18.5",
+    "pdfkit": "^0.13.0",
+    "canvas": "^2.11.2",
+    "sharp": "^0.32.6",
+    "opentype.js": "^1.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.1.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.1",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vite-plugin-electron": "^0.14.1",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "wait-on": "^7.0.1"
+  },
+  "build": {
+    "appId": "com.niimbot.printer",
+    "productName": "Niimbot Printer",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "resources/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ]
+  }
+}
