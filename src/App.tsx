@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { fabric } from 'fabric'
 import LabelDesigner from './components/LabelDesigner'
 import Toolbar from './components/Toolbar'
 import Sidebar from './components/Sidebar'
 import PrinterPanel from './components/PrinterPanel'
+import PropertiesPanel from './components/PropertiesPanel'
 
 function App() {
   const [selectedTool, setSelectedTool] = useState<string>('select')
   const [printerConnected, setPrinterConnected] = useState(false)
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null)
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -23,15 +26,23 @@ function App() {
 
         {/* Label Designer */}
         <div className="flex-1 flex items-center justify-center p-4">
-          <LabelDesigner selectedTool={selectedTool} />
+          <LabelDesigner selectedTool={selectedTool} onCanvasReady={setCanvas} />
         </div>
       </div>
 
-      {/* Right Panel - Printer Controls */}
-      <PrinterPanel
-        connected={printerConnected}
-        onConnectionChange={setPrinterConnected}
-      />
+      {/* Right Panels */}
+      <div className="flex">
+        {/* Properties Panel */}
+        <div className="w-64 bg-white border-l border-gray-200">
+          <PropertiesPanel canvas={canvas} />
+        </div>
+
+        {/* Printer Panel */}
+        <PrinterPanel
+          connected={printerConnected}
+          onConnectionChange={setPrinterConnected}
+        />
+      </div>
     </div>
   )
 }

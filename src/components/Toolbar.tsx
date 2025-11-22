@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FileText, FolderOpen, Save, Type, Square, Circle, Image, FileSpreadsheet, TypeIcon } from 'lucide-react'
 import ExcelImporter from './ExcelImporter'
 import FontManager from './FontManager'
 
@@ -77,24 +78,24 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
             <button
               onClick={handleNew}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Nový"
             >
-              📄 Nový
+              <FileText size={16} /> Nový
             </button>
             <button
               onClick={handleLoad}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Otevřít"
             >
-              📂 Otevřít
+              <FolderOpen size={16} /> Otevřít
             </button>
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Uložit"
             >
-              💾 Uložit
+              <Save size={16} /> Uložit
             </button>
           </div>
 
@@ -102,24 +103,24 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
             <button
               onClick={handleAddText}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Přidat text"
             >
-              📝 Text
+              <Type size={16} /> Text
             </button>
             <button
               onClick={handleAddRectangle}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Přidat obdélník"
             >
-              ⬜ Obdélník
+              <Square size={16} /> Obdélník
             </button>
             <button
               onClick={handleAddCircle}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Přidat kruh"
             >
-              ⭕ Kruh
+              <Circle size={16} /> Kruh
             </button>
           </div>
 
@@ -127,17 +128,17 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
             <button
               onClick={handleImportImage}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Importovat obrázek/SVG"
             >
-              🖼️ Importovat obrázek
+              <Image size={16} /> Importovat obrázek
             </button>
             <button
               onClick={() => setShowExcelImporter(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Importovat z Excelu"
             >
-              📊 Import z Excelu
+              <FileSpreadsheet size={16} /> Import z Excelu
             </button>
           </div>
 
@@ -145,10 +146,10 @@ export default function Toolbar() {
           <div className="flex items-center space-x-1">
             <button
               onClick={() => setShowFontManager(true)}
-              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded"
+              className="px-3 py-1.5 text-sm hover:bg-gray-100 rounded flex items-center gap-1.5"
               title="Správa fontů"
             >
-              🔤 Fonty
+              <TypeIcon size={16} /> Fonty
             </button>
           </div>
         </div>

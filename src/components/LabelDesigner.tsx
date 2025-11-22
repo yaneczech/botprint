@@ -3,9 +3,10 @@ import { fabric } from 'fabric'
 
 interface LabelDesignerProps {
   selectedTool: string
+  onCanvasReady?: (canvas: fabric.Canvas) => void
 }
 
-export default function LabelDesigner({ selectedTool }: LabelDesignerProps) {
+export default function LabelDesigner({ selectedTool, onCanvasReady }: LabelDesignerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fabricRef = useRef<fabric.Canvas | null>(null)
   const [labelSize, setLabelSize] = useState({ width: 384, height: 240 }) // Default: 40mm x 30mm at 96 DPI
@@ -20,6 +21,32 @@ export default function LabelDesigner({ selectedTool }: LabelDesignerProps) {
 
       // Add grid
       addGrid(fabricRef.current, labelSize.width, labelSize.height)
+
+      // Notify parent component
+      if (onCanvasReady) {
+        onCanvasReady(fabricRef.current)
+      }
+
+      // Add keyboard shortcuts
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (!fabricRef.current) return
+
+        // Delete key
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          const activeObject = fabricRef.current.getActiveObject()
+          if (activeObject && document.activeElement?.tagName !== 'INPUT') {
+            fabricRef.current.remove(activeObject)
+            fabricRef.current.renderAll()
+            e.preventDefault()
+          }
+        }
+      }
+
+      window.addEventListener('keydown', handleKeyDown)
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown)
+      }
     }
 
     return () => {
@@ -97,9 +124,10 @@ export default function LabelDesigner({ selectedTool }: LabelDesignerProps) {
       top: 100,
       width: 100,
       height: 60,
-      fill: 'transparent',
+      fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 2,
+      strokeUniform: true, // Prevents stroke from scaling with object
     })
 
     fabricRef.current.add(rect)
@@ -113,9 +141,10 @@ export default function LabelDesigner({ selectedTool }: LabelDesignerProps) {
       left: 100,
       top: 100,
       radius: 50,
-      fill: 'transparent',
+      fill: '#ffffff',
       stroke: '#000000',
       strokeWidth: 2,
+      strokeUniform: true, // Prevents stroke from scaling with object
     })
 
     fabricRef.current.add(circle)
