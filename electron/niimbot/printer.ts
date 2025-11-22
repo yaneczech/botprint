@@ -5,6 +5,7 @@ export interface PrinterDevice {
   id: string
   name: string
   type: 'bluetooth' | 'usb'
+  peripheral?: any // BLE peripheral object
 }
 
 export interface PrinterInfo {
@@ -26,6 +27,7 @@ export class NiimbotPrinter {
   private protocol: NiimbotProtocol
   private connected: boolean = false
   private deviceId: string | null = null
+  private devices: PrinterDevice[] = []
 
   constructor() {
     this.adapter = new BluetoothAdapter()
@@ -33,11 +35,18 @@ export class NiimbotPrinter {
   }
 
   async discover(): Promise<PrinterDevice[]> {
-    return await this.adapter.discover()
+    this.devices = await this.adapter.discover()
+    return this.devices
   }
 
   async connect(deviceId: string): Promise<boolean> {
     try {
+      // Find the device and set its peripheral
+      const device = this.devices.find(d => d.id === deviceId)
+      if (device && device.peripheral) {
+        this.adapter.setPeripheral(device.peripheral)
+      }
+
       const success = await this.adapter.connect(deviceId)
       if (success) {
         this.connected = true

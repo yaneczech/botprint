@@ -2,58 +2,108 @@ import { PrinterDevice } from './printer'
 
 /**
  * Bluetooth adapter for Niimbot printers
- * Uses Web Bluetooth API through Electron
+ * Uses @abandonware/noble for BLE communication
  */
 export class BluetoothAdapter {
-  private device: any = null
-  private characteristic: any = null
+  private noble: any = null
+  private peripheral: any = null
+  private writeCharacteristic: any = null
+  private notifyCharacteristic: any = null
   private responseBuffer: Buffer = Buffer.alloc(0)
   private responseResolve: ((value: Buffer) => void) | null = null
 
   // Niimbot Bluetooth service and characteristic UUIDs
-  private readonly SERVICE_UUID = '0000ff00-0000-1000-8000-00805f9b34fb'
-  private readonly CHAR_WRITE_UUID = '0000ff02-0000-1000-8000-00805f9b34fb'
-  private readonly CHAR_NOTIFY_UUID = '0000ff01-0000-1000-8000-00805f9b34fb'
+  private readonly SERVICE_UUID = 'ff000000100080008000805f9b34fb'
+  private readonly CHAR_WRITE_UUID = 'ff020000100080008000805f9b34fb'
+  private readonly CHAR_NOTIFY_UUID = 'ff010000100080008000805f9b34fb'
 
-  async discover(): Promise<PrinterDevice[]> {
+  constructor() {
     try {
-      // Note: In Electron, we need to use a different approach
-      // This is a placeholder - actual implementation would use node-bluetooth or similar
-
-      // For now, return mock devices for testing
-      console.log('Discovering Niimbot printers...')
-
-      // In production, you would use:
-      // - On macOS: noble or @abandonware/noble
-      // - On Windows: node-bluetooth-serial-port
-      // - Or use Electron's bluetooth API
-
-      return [
-        {
-          id: 'mock-device-1',
-          name: 'Niimbot B21',
-          type: 'bluetooth'
-        }
-      ]
+      // Dynamically import noble
+      this.noble = require('@abandonware/noble')
     } catch (error) {
-      console.error('Discovery error:', error)
-      return []
+      console.error('Noble not installed. Install with: npm install @abandonware/noble')
     }
   }
 
+  async discover(): Promise<PrinterDevice[]> {
+    if (!this.noble) {
+      console.error('Noble not available')
+      return []
+    }
+
+    return new Promise((resolve) => {
+      const devices: PrinterDevice[] = []
+      const timeout = setTimeout(() => {
+        this.noble.stopScanning()
+        resolve(devices)
+      }, 10000) // 10 second scan
+
+      this.noble.on('stateChange', async (state: string) => {
+        if (state === 'poweredOn') {
+          console.log('Starting Bluetooth scan for Niimbot printers...')
+          await this.noble.startScanningAsync([], false)
+        }
+      })
+
+      this.noble.on('discover', (peripheral: any) => {
+        const name = peripheral.advertisement.localName
+
+        // Filter for Niimbot devices (B1, B18, B21, D11, D110, etc.)
+        if (name && (name.includes('B1') || name.includes('B18') ||
+                     name.includes('B21') || name.includes('D11') ||
+                     name.includes('D110') || name.toLowerCase().includes('niimbot'))) {
+          console.log(`Found Niimbot printer: ${name}`)
+          devices.push({
+            id: peripheral.id,
+            name: name || 'Unknown Niimbot',
+            type: 'bluetooth',
+            peripheral // Store for later connection
+          })
+        }
+      })
+    })
+  }
+
   async connect(deviceId: string): Promise<boolean> {
+    if (!this.noble || !this.peripheral) {
+      console.error('Device not found for connection')
+      return false
+    }
+
     try {
-      console.log(`Connecting to device: ${deviceId}`)
+      console.log(`Connecting to ${deviceId}...`)
 
-      // Actual Bluetooth connection would happen here
-      // For now, we simulate a successful connection
+      // Connect to peripheral
+      await this.peripheral.connectAsync()
+      console.log('Connected to peripheral')
 
-      // In production:
-      // 1. Connect to device
-      // 2. Discover services
-      // 3. Get characteristics
-      // 4. Subscribe to notifications
+      // Discover services and characteristics
+      const { characteristics } = await this.peripheral.discoverSomeServicesAndCharacteristicsAsync(
+        [this.SERVICE_UUID],
+        [this.CHAR_WRITE_UUID, this.CHAR_NOTIFY_UUID]
+      )
 
+      // Find write and notify characteristics
+      this.writeCharacteristic = characteristics.find((c: any) =>
+        c.uuid === this.CHAR_WRITE_UUID.replace(/-/g, '')
+      )
+      this.notifyCharacteristic = characteristics.find((c: any) =>
+        c.uuid === this.CHAR_NOTIFY_UUID.replace(/-/g, '')
+      )
+
+      if (!this.writeCharacteristic || !this.notifyCharacteristic) {
+        console.error('Required characteristics not found')
+        return false
+      }
+
+      // Subscribe to notifications
+      await this.notifyCharacteristic.subscribeAsync()
+      this.notifyCharacteristic.on('data', (data: Buffer) => {
+        this.handleNotification(data)
+      })
+
+      console.log('Successfully connected to Niimbot printer')
       return true
     } catch (error) {
       console.error('Connection error:', error)
@@ -62,11 +112,13 @@ export class BluetoothAdapter {
   }
 
   async disconnect(): Promise<void> {
-    if (this.device) {
+    if (this.peripheral) {
       try {
-        // Disconnect from device
-        this.device = null
-        this.characteristic = null
+        await this.peripheral.disconnectAsync()
+        this.peripheral = null
+        this.writeCharacteristic = null
+        this.notifyCharacteristic = null
+        console.log('Disconnected from printer')
       } catch (error) {
         console.error('Disconnect error:', error)
       }
@@ -75,7 +127,7 @@ export class BluetoothAdapter {
 
   async sendData(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      if (!this.device) {
+      if (!this.writeCharacteristic) {
         reject(new Error('Not connected'))
         return
       }
@@ -83,26 +135,33 @@ export class BluetoothAdapter {
       this.responseResolve = resolve
       this.responseBuffer = Buffer.alloc(0)
 
-      try {
-        // Send data to printer
-        // In production, this would write to the Bluetooth characteristic
-        console.log('Sending data:', data.toString('hex'))
+      // Set timeout for response
+      const timeout = setTimeout(() => {
+        if (this.responseResolve) {
+          this.responseResolve = null
+          reject(new Error('Response timeout'))
+        }
+      }, 5000)
 
-        // Simulate response
-        setTimeout(() => {
-          const mockResponse = Buffer.from([0x55, 0x01, 0x00, 0x01, 0xAA])
-          if (this.responseResolve) {
-            this.responseResolve(mockResponse)
-            this.responseResolve = null
+      try {
+        console.log('Sending:', data.toString('hex'))
+
+        this.writeCharacteristic.write(data, false, (error: any) => {
+          if (error) {
+            clearTimeout(timeout)
+            reject(error)
           }
-        }, 100)
+          // Response will come through notification handler
+        })
       } catch (error) {
+        clearTimeout(timeout)
         reject(error)
       }
     })
   }
 
   private handleNotification(data: Buffer): void {
+    console.log('Received:', data.toString('hex'))
     this.responseBuffer = Buffer.concat([this.responseBuffer, data])
 
     // Check if we have a complete response (ends with 0xAA)
@@ -112,6 +171,11 @@ export class BluetoothAdapter {
         this.responseResolve(this.responseBuffer)
         this.responseResolve = null
       }
+      this.responseBuffer = Buffer.alloc(0)
     }
+  }
+
+  setPeripheral(peripheral: any): void {
+    this.peripheral = peripheral
   }
 }
