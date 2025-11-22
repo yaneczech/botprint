@@ -10,4 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setDensity: (density: number) => ipcRenderer.invoke('printer:setDensity', density),
     setLabelType: (labelType: number) => ipcRenderer.invoke('printer:setLabelType', labelType),
   },
+  system: {
+    getFonts: () => ipcRenderer.invoke('system:getFonts'),
+  },
 })

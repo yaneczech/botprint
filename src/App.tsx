@@ -5,11 +5,13 @@ import Toolbar from './components/Toolbar'
 import Sidebar from './components/Sidebar'
 import PrinterPanel from './components/PrinterPanel'
 import PropertiesPanel from './components/PropertiesPanel'
+import LabelSizeSelect, { LABEL_SIZES, type LabelSize } from './components/LabelSizeSelect'
 
 function App() {
   const [selectedTool, setSelectedTool] = useState<string>('select')
   const [printerConnected, setPrinterConnected] = useState(false)
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null)
+  const [labelSize, setLabelSize] = useState<LabelSize>(LABEL_SIZES[6]) // Default: 40×30mm
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -22,11 +24,23 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Toolbar */}
-        <Toolbar />
+        <div className="flex items-center gap-2 bg-white border-b border-gray-200 px-4 py-2">
+          <Toolbar />
+          <div className="ml-auto">
+            <LabelSizeSelect
+              currentSize={labelSize}
+              onSizeChange={setLabelSize}
+            />
+          </div>
+        </div>
 
         {/* Label Designer */}
         <div className="flex-1 flex items-center justify-center p-4">
-          <LabelDesigner selectedTool={selectedTool} onCanvasReady={setCanvas} />
+          <LabelDesigner
+            selectedTool={selectedTool}
+            onCanvasReady={setCanvas}
+            labelSize={labelSize}
+          />
         </div>
       </div>
 

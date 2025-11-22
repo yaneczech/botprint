@@ -12,6 +12,9 @@ declare global {
         setDensity: (density: number) => Promise<boolean>
         setLabelType: (labelType: number) => Promise<boolean>
       }
+      system: {
+        getFonts: () => Promise<string[]>
+      }
     }
     labelDesigner?: {
       addText: () => void

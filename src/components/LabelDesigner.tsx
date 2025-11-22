@@ -1,40 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
 import { fabric } from 'fabric'
+import type { LabelSize } from './LabelSizeSelect'
 
 interface LabelDesignerProps {
   selectedTool: string
   onCanvasReady?: (canvas: fabric.Canvas) => void
+  labelSize: LabelSize
 }
 
-export default function LabelDesigner({ selectedTool, onCanvasReady }: LabelDesignerProps) {
+export default function LabelDesigner({ selectedTool, onCanvasReady, labelSize }: LabelDesignerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fabricRef = useRef<fabric.Canvas | null>(null)
-  const [labelSize, setLabelSize] = useState({ width: 384, height: 240 }) // Default: 40mm x 30mm at 96 DPI
 
   useEffect(() => {
     if (canvasRef.current && !fabricRef.current) {
       fabricRef.current = new fabric.Canvas(canvasRef.current, {
-        width: labelSize.width,
-        height: labelSize.height,
+        width: labelSize.widthPx,
+        height: labelSize.heightPx,
         backgroundColor: '#ffffff',
       })
 
       // Add grid
-      addGrid(fabricRef.current, labelSize.width, labelSize.height)
+      addGrid(fabricRef.current, labelSize.widthPx, labelSize.heightPx)
 
       // Notify parent component
       if (onCanvasReady) {
         onCanvasReady(fabricRef.current)
       }
 
+      // Handle stroke scaling during transformation
+      fabricRef.current.on('object:scaling', (e) => {
+        const obj = e.target
+        if (obj && (obj as any).strokeUniform) {
+          // Force redraw to show uniform stroke during scaling
+          fabricRef.current?.renderAll()
+        }
+      })
+
       // Add keyboard shortcuts
       const handleKeyDown = (e: KeyboardEvent) => {
         if (!fabricRef.current) return
 
-        // Delete key
+        // Delete or Backspace key
         if (e.key === 'Delete' || e.key === 'Backspace') {
           const activeObject = fabricRef.current.getActiveObject()
-          if (activeObject && document.activeElement?.tagName !== 'INPUT') {
+          // Only delete if not editing text
+          if (activeObject && document.activeElement?.tagName !== 'INPUT' &&
+              document.activeElement?.tagName !== 'TEXTAREA' &&
+              !document.activeElement?.classList.contains('upper-canvas')) {
             fabricRef.current.remove(activeObject)
             fabricRef.current.renderAll()
             e.preventDefault()
@@ -46,6 +59,7 @@ export default function LabelDesigner({ selectedTool, onCanvasReady }: LabelDesi
 
       return () => {
         window.removeEventListener('keydown', handleKeyDown)
+        fabricRef.current?.off('object:scaling')
       }
     }
 
@@ -82,6 +96,24 @@ export default function LabelDesigner({ selectedTool, onCanvasReady }: LabelDesi
         break
     }
   }, [selectedTool])
+
+  // Handle label size changes
+  useEffect(() => {
+    if (fabricRef.current) {
+      fabricRef.current.setDimensions({
+        width: labelSize.widthPx,
+        height: labelSize.heightPx,
+      })
+
+      // Clear and re-add grid
+      const objects = fabricRef.current.getObjects()
+      const gridObjects = objects.filter(obj => !obj.selectable && !obj.evented)
+      gridObjects.forEach(obj => fabricRef.current?.remove(obj))
+      addGrid(fabricRef.current, labelSize.widthPx, labelSize.heightPx)
+
+      fabricRef.current.renderAll()
+    }
+  }, [labelSize])
 
   const addGrid = (canvas: fabric.Canvas, width: number, height: number) => {
     const gridSize = 20
@@ -200,7 +232,13 @@ export default function LabelDesigner({ selectedTool, onCanvasReady }: LabelDesi
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="mb-2 text-center text-sm text-gray-600">
+        {labelSize.name} ({labelSize.width}×{labelSize.height}mm)
+      </div>
       <canvas ref={canvasRef} className="border-2 border-gray-300" />
+      <div className="mt-2 text-center text-xs text-gray-500">
+        Rozlišení: {labelSize.widthPx}×{labelSize.heightPx}px (203 DPI)
+      </div>
     </div>
   )
 }
