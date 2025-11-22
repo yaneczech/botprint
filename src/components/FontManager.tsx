@@ -20,29 +20,44 @@ const STORAGE_KEY = 'niimbot_custom_fonts'
 export default function FontManager({ onClose }: FontManagerProps) {
   const [fonts, setFonts] = useState<Font[]>([])
   const [loading, setLoading] = useState(false)
-
-  // System fonts - expanded list
-  const systemFonts: Font[] = [
-    { id: 'arial', name: 'Arial', family: 'Arial', loaded: true, isSystem: true },
-    { id: 'helvetica', name: 'Helvetica', family: 'Helvetica', loaded: true, isSystem: true },
-    { id: 'times', name: 'Times New Roman', family: 'Times New Roman', loaded: true, isSystem: true },
-    { id: 'courier', name: 'Courier New', family: 'Courier New', loaded: true, isSystem: true },
-    { id: 'georgia', name: 'Georgia', family: 'Georgia', loaded: true, isSystem: true },
-    { id: 'verdana', name: 'Verdana', family: 'Verdana', loaded: true, isSystem: true },
-    { id: 'trebuchet', name: 'Trebuchet MS', family: 'Trebuchet MS', loaded: true, isSystem: true },
-    { id: 'impact', name: 'Impact', family: 'Impact', loaded: true, isSystem: true },
-    { id: 'palatino', name: 'Palatino', family: 'Palatino', loaded: true, isSystem: true },
-    { id: 'garamond', name: 'Garamond', family: 'Garamond', loaded: true, isSystem: true },
-    { id: 'bookman', name: 'Bookman', family: 'Bookman', loaded: true, isSystem: true },
-    { id: 'avantgarde', name: 'Avant Garde', family: 'Avant Garde', loaded: true, isSystem: true },
-    { id: 'monaco', name: 'Monaco', family: 'Monaco', loaded: true, isSystem: true },
-    { id: 'optima', name: 'Optima', family: 'Optima', loaded: true, isSystem: true },
-  ]
+  const [systemFonts, setSystemFonts] = useState<Font[]>([])
+  const [loadingSystemFonts, setLoadingSystemFonts] = useState(true)
 
   useEffect(() => {
-    // Load custom fonts from localStorage on mount
+    // Load system fonts and custom fonts on mount
+    loadSystemFonts()
     loadSavedFonts()
   }, [])
+
+  const loadSystemFonts = async () => {
+    try {
+      setLoadingSystemFonts(true)
+      const fontNames = await window.electronAPI.system.getFonts()
+
+      const systemFontList: Font[] = fontNames.map((name, index) => ({
+        id: `system-${index}`,
+        name,
+        family: name,
+        loaded: true,
+        isSystem: true,
+      }))
+
+      setSystemFonts(systemFontList)
+    } catch (error) {
+      console.error('Error loading system fonts:', error)
+      // Fallback to default list
+      setSystemFonts([
+        { id: 'arial', name: 'Arial', family: 'Arial', loaded: true, isSystem: true },
+        { id: 'helvetica', name: 'Helvetica', family: 'Helvetica', loaded: true, isSystem: true },
+        { id: 'times', name: 'Times New Roman', family: 'Times New Roman', loaded: true, isSystem: true },
+        { id: 'courier', name: 'Courier New', family: 'Courier New', loaded: true, isSystem: true },
+        { id: 'georgia', name: 'Georgia', family: 'Georgia', loaded: true, isSystem: true },
+        { id: 'verdana', name: 'Verdana', family: 'Verdana', loaded: true, isSystem: true },
+      ])
+    } finally {
+      setLoadingSystemFonts(false)
+    }
+  }
 
   const loadSavedFonts = async () => {
     try {

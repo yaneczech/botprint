@@ -72,8 +72,7 @@ export default function Toolbar() {
 
   return (
     <>
-      <div className="bg-white border-b border-gray-200 px-4 py-2">
-        <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 flex-1">
           {/* File operations */}
           <div className="flex items-center space-x-1 border-r border-gray-300 pr-2">
             <button
@@ -153,7 +152,6 @@ export default function Toolbar() {
             </button>
           </div>
         </div>
-      </div>
 
       {showExcelImporter && (
         <ExcelImporter onClose={() => setShowExcelImporter(false)} />
