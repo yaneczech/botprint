@@ -71,6 +71,9 @@ export default function PrinterPanel({ connected, onConnectionChange }: PrinterP
 
     setIsPrinting(true)
     try {
+      // Wait for all fonts to load before printing
+      await document.fonts.ready
+
       // Convert canvas to image data
       const dataURL = canvas.toDataURL('image/png')
       const base64 = dataURL.split(',')[1]

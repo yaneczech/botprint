@@ -44,10 +44,20 @@ export default function LabelDesigner({ selectedTool, onCanvasReady, labelSize }
         // Delete or Backspace key
         if (e.key === 'Delete' || e.key === 'Backspace') {
           const activeObject = fabricRef.current.getActiveObject()
-          // Only delete if not editing text
-          if (activeObject && document.activeElement?.tagName !== 'INPUT' &&
-              document.activeElement?.tagName !== 'TEXTAREA' &&
-              !document.activeElement?.classList.contains('upper-canvas')) {
+
+          // Skip if typing in input or textarea
+          if (document.activeElement?.tagName === 'INPUT' ||
+              document.activeElement?.tagName === 'TEXTAREA') {
+            return
+          }
+
+          // Skip if editing text in IText object
+          if (activeObject && (activeObject as any).isEditing) {
+            return
+          }
+
+          // Delete the selected object
+          if (activeObject) {
             fabricRef.current.remove(activeObject)
             fabricRef.current.renderAll()
             e.preventDefault()
