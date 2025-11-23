@@ -49,8 +49,8 @@ export class BluetoothAdapter {
       this.noble.on('discover', (peripheral: any) => {
         const name = peripheral.advertisement.localName
 
-        // Filter for Niimbot devices (B1, B18, B21, D11, D110, etc.)
-        if (name && (name.includes('B1') || name.includes('B18') ||
+        // Filter for Niimbot devices (N1, B1, B18, B21, D11, D110, etc.)
+        if (name && (name.includes('N1') || name.includes('B1') || name.includes('B18') ||
                      name.includes('B21') || name.includes('D11') ||
                      name.includes('D110') || name.toLowerCase().includes('niimbot'))) {
           console.log(`Found Niimbot printer: ${name}`)
