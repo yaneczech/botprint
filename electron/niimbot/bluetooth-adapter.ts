@@ -113,12 +113,25 @@ export class BluetoothAdapter {
       await this.characteristic.subscribeAsync()
       console.log('Subscribed to notifications')
 
+      // Set up notification handler
       this.characteristic.on('data', (data: Buffer) => {
         console.log('*** RAW DATA RECEIVED ***:', data.toString('hex'))
         this.handleNotification(data)
       })
 
+      // Also try 'read' event (some Noble versions use this)
+      this.characteristic.on('read', (data: Buffer) => {
+        console.log('*** DATA READ EVENT ***:', data.toString('hex'))
+        this.handleNotification(data)
+      })
+
       console.log('Successfully connected to Niimbot printer')
+      console.log('Characteristic properties:', this.characteristic.properties)
+
+      // Wait 2 seconds to see if printer sends any spontaneous data
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      console.log('Waited 2s - no spontaneous data from printer')
+
       return true
     } catch (error) {
       console.error('Connection error:', error)
@@ -160,14 +173,19 @@ export class BluetoothAdapter {
       try {
         console.log('Sending:', data.toString('hex'))
 
-        this.characteristic.write(data, false, (error: any) => {
+        // Try write WITH response first (true parameter)
+        this.characteristic.write(data, true, (error: any) => {
           if (error) {
+            console.error('Write error:', error)
             clearTimeout(timeout)
             reject(error)
+          } else {
+            console.log('Write successful, waiting for notification...')
           }
           // Response will come through notification handler
         })
       } catch (error) {
+        console.error('Send error:', error)
         clearTimeout(timeout)
         reject(error)
       }
