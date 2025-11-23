@@ -73,8 +73,10 @@ ipcMain.handle('printer:getInfo', async () => {
   return await printer.getInfo()
 })
 
-ipcMain.handle('printer:print', async (_, imageData: Buffer, options: any) => {
+ipcMain.handle('printer:print', async (_, imageDataBase64: string, options: any) => {
   if (!printer) throw new Error('Printer not initialized')
+  // Convert base64 string to Buffer in main process
+  const imageData = Buffer.from(imageDataBase64, 'base64')
   return await printer.print(imageData, options)
 })
 

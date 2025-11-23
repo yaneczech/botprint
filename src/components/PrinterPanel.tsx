@@ -77,9 +77,9 @@ export default function PrinterPanel({ connected, onConnectionChange }: PrinterP
       // Convert canvas to image data
       const dataURL = canvas.toDataURL('image/png')
       const base64 = dataURL.split(',')[1]
-      const imageData = Buffer.from(base64, 'base64')
 
-      await (window as any).electronAPI.printer.print(imageData, {
+      // Send base64 string - will be converted to Buffer in main process
+      await (window as any).electronAPI.printer.print(base64, {
         density,
         copies,
       })
