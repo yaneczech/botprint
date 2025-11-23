@@ -25,7 +25,8 @@ export class NiimbotProtocol {
 
   buildPacket(command: number, data: Buffer = Buffer.alloc(0)): Buffer {
     // Format: [0x55, 0x55, command, size, data, checksum, 0xAA, 0xAA]
-    const packet = Buffer.alloc(6 + data.length)
+    // Total: 2 + 1 + 1 + N + 1 + 2 = 7 + N bytes
+    const packet = Buffer.alloc(7 + data.length)
 
     packet[0] = this.PACKET_START
     packet[1] = this.PACKET_START  // Double start byte
@@ -42,9 +43,9 @@ export class NiimbotProtocol {
       checksum ^= data[i]
     }
 
-    packet[packet.length - 3] = checksum
-    packet[packet.length - 2] = this.PACKET_END
-    packet[packet.length - 1] = this.PACKET_END  // Double end byte
+    packet[4 + data.length] = checksum
+    packet[5 + data.length] = this.PACKET_END
+    packet[6 + data.length] = this.PACKET_END  // Double end byte
 
     return packet
   }
