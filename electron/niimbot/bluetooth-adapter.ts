@@ -11,6 +11,7 @@ export class BluetoothAdapter {
   private notifyCharacteristic: any = null
   private responseBuffer: Buffer = Buffer.alloc(0)
   private responseResolve: ((value: Buffer) => void) | null = null
+  private peripheralMap: Map<string, any> = new Map() // Store peripherals by ID
 
   // Niimbot Bluetooth service and characteristic UUIDs
   private readonly SERVICE_UUID = 'ff000000100080008000805f9b34fb'
@@ -34,6 +35,8 @@ export class BluetoothAdapter {
 
     return new Promise((resolve) => {
       const devices: PrinterDevice[] = []
+      this.peripheralMap.clear() // Clear old peripherals
+
       const timeout = setTimeout(() => {
         this.noble.stopScanning()
         resolve(devices)
@@ -54,11 +57,15 @@ export class BluetoothAdapter {
                      name.includes('B21') || name.includes('D11') ||
                      name.includes('D110') || name.toLowerCase().includes('niimbot'))) {
           console.log(`Found Niimbot printer: ${name}`)
+
+          // Store peripheral in map (not sent over IPC)
+          this.peripheralMap.set(peripheral.id, peripheral)
+
+          // Only send serializable data
           devices.push({
             id: peripheral.id,
             name: name || 'Unknown Niimbot',
-            type: 'bluetooth',
-            peripheral // Store for later connection
+            type: 'bluetooth'
           })
         }
       })
@@ -66,7 +73,9 @@ export class BluetoothAdapter {
   }
 
   async connect(deviceId: string): Promise<boolean> {
-    if (!this.noble || !this.peripheral) {
+    // Get peripheral from map
+    const peripheral = this.peripheralMap.get(deviceId)
+    if (!this.noble || !peripheral) {
       console.error('Device not found for connection')
       return false
     }
@@ -74,8 +83,11 @@ export class BluetoothAdapter {
     try {
       console.log(`Connecting to ${deviceId}...`)
 
+      // Store current peripheral
+      this.peripheral = peripheral
+
       // Connect to peripheral
-      await this.peripheral.connectAsync()
+      await peripheral.connectAsync()
       console.log('Connected to peripheral')
 
       // Discover services and characteristics
@@ -173,9 +185,5 @@ export class BluetoothAdapter {
       }
       this.responseBuffer = Buffer.alloc(0)
     }
-  }
-
-  setPeripheral(peripheral: any): void {
-    this.peripheral = peripheral
   }
 }
