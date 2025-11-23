@@ -14,9 +14,10 @@ export class BluetoothAdapter {
   private peripheralMap: Map<string, any> = new Map() // Store peripherals by ID
 
   // Niimbot Bluetooth service and characteristic UUIDs
-  private readonly SERVICE_UUID = 'ff000000-1000-8000-8000-805f9b34fb'
-  private readonly CHAR_WRITE_UUID = 'ff020000-1000-8000-8000-805f9b34fb'
-  private readonly CHAR_NOTIFY_UUID = 'ff010000-1000-8000-8000-805f9b34fb'
+  // Using 16-bit short UUIDs (Noble expands them automatically)
+  private readonly SERVICE_UUID = 'ff00'
+  private readonly CHAR_WRITE_UUID = 'ff02'
+  private readonly CHAR_NOTIFY_UUID = 'ff01'
 
   constructor() {
     try {
