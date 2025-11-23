@@ -66,14 +66,19 @@ export class NiimbotPrinter {
     if (!this.connected) return null
 
     try {
+      // First try heartbeat to check if printer responds
+      console.log('Testing with HEARTBEAT command (0xDC)...')
+      const heartbeatData = await this.sendCommand(this.protocol.buildHeartbeatCommand())
+      console.log('Heartbeat response:', heartbeatData.toString('hex'))
+
       // Get printer info using Niimbot protocol
-      const modelData = await this.sendCommand(this.protocol.buildGetModelCommand())
+      const infoData = await this.sendCommand(this.protocol.buildGetInfoCommand())
       const serialData = await this.sendCommand(this.protocol.buildGetSerialCommand())
       const batteryData = await this.sendCommand(this.protocol.buildGetBatteryCommand())
       const firmwareData = await this.sendCommand(this.protocol.buildGetFirmwareCommand())
 
       return {
-        model: this.protocol.parseModelResponse(modelData),
+        model: this.protocol.parseModelResponse(infoData),
         serialNumber: this.protocol.parseSerialResponse(serialData),
         firmwareVersion: this.protocol.parseFirmwareResponse(firmwareData),
         batteryLevel: this.protocol.parseBatteryResponse(batteryData),

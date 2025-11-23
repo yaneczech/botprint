@@ -7,21 +7,23 @@ export class NiimbotProtocol {
   private readonly PACKET_START = 0x55
   private readonly PACKET_END = 0xAA
 
-  // Command types
-  private readonly CMD_CONNECT = 0x01
-  private readonly CMD_GET_INFO = 0x40
-  private readonly CMD_GET_RFID = 0x1A
-  private readonly CMD_SET_DENSITY = 0x21
-  private readonly CMD_SET_LABEL_TYPE = 0x23
-  private readonly CMD_START_PRINT = 0x01
-  private readonly CMD_END_PRINT = 0xF3
-  private readonly CMD_START_PAGE = 0x03
-  private readonly CMD_END_PAGE = 0xE3
-  private readonly CMD_IMAGE_DATA = 0x85
-  private readonly CMD_GET_BATTERY = 0x50
-  private readonly CMD_GET_MODEL = 0x40
-  private readonly CMD_GET_SERIAL = 0x44
-  private readonly CMD_GET_FIRMWARE = 0x3E
+  // Command types - Source: https://github.com/AndBondStyle/niimprint
+  private readonly CMD_HEARTBEAT = 0xDC  // Status check (paper, power, etc.)
+  private readonly CMD_GET_INFO = 0x40  // Get device info (density, speed, type)
+  private readonly CMD_GET_RFID = 0x1A  // Read RFID tag
+  private readonly CMD_GET_BATTERY = 0x50  // Get battery level
+  private readonly CMD_GET_SERIAL = 0x44  // Get serial number
+  private readonly CMD_GET_FIRMWARE = 0x3E  // Get firmware version
+  private readonly CMD_SET_DENSITY = 0x21  // Set print density (1-5)
+  private readonly CMD_SET_LABEL_TYPE = 0x23  // Set label type (1-3)
+  private readonly CMD_START_PRINT = 0x01  // Start printing session
+  private readonly CMD_END_PRINT = 0xF3  // End printing session
+  private readonly CMD_START_PAGE = 0x03  // Start page print
+  private readonly CMD_END_PAGE = 0xE3  // End page print
+  private readonly CMD_IMAGE_DATA = 0x85  // Send image line data
+  private readonly CMD_SET_DIMENSION = 0x13  // Set label width/height
+  private readonly CMD_SET_QUANTITY = 0x15  // Set print quantity
+  private readonly CMD_GET_PRINT_STATUS = 0xA3  // Get print progress
 
   buildPacket(command: number, data: Buffer = Buffer.alloc(0)): Buffer {
     // Format: [0x55, 0x55, command, size, data, checksum, 0xAA, 0xAA]
@@ -50,12 +52,12 @@ export class NiimbotProtocol {
     return packet
   }
 
-  buildConnectCommand(): Buffer {
-    return this.buildPacket(this.CMD_CONNECT)
+  buildHeartbeatCommand(): Buffer {
+    return this.buildPacket(this.CMD_HEARTBEAT)
   }
 
-  buildGetModelCommand(): Buffer {
-    return this.buildPacket(this.CMD_GET_MODEL)
+  buildGetInfoCommand(): Buffer {
+    return this.buildPacket(this.CMD_GET_INFO)
   }
 
   buildGetSerialCommand(): Buffer {
