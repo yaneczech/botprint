@@ -7,17 +7,15 @@ import { PrinterDevice } from './printer'
 export class BluetoothAdapter {
   private noble: any = null
   private peripheral: any = null
-  private writeCharacteristic: any = null
-  private notifyCharacteristic: any = null
+  private characteristic: any = null
   private responseBuffer: Buffer = Buffer.alloc(0)
   private responseResolve: ((value: Buffer) => void) | null = null
   private peripheralMap: Map<string, any> = new Map() // Store peripherals by ID
 
   // Niimbot Bluetooth service and characteristic UUIDs
-  // Using 16-bit short UUIDs (Noble expands them automatically)
-  private readonly SERVICE_UUID = 'ff00'
-  private readonly CHAR_WRITE_UUID = 'ff02'
-  private readonly CHAR_NOTIFY_UUID = 'ff01'
+  // Source: https://github.com/MultiMote/niimbot-web-ble-terminal
+  private readonly SERVICE_UUID = 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'
+  private readonly CHAR_UUID = 'bef8d6c9-9c21-4c9e-b632-bd58c1009f9f'
 
   constructor() {
     try {
@@ -91,37 +89,29 @@ export class BluetoothAdapter {
       await peripheral.connectAsync()
       console.log('Connected to peripheral')
 
-      // First, discover ALL services to see what's available
-      const { services } = await this.peripheral.discoverServicesAsync()
-      console.log('Available services:', services.map((s: any) => s.uuid))
+      // Discover Niimbot service and characteristic
+      const { characteristics } = await this.peripheral.discoverSomeServicesAndCharacteristicsAsync(
+        [this.SERVICE_UUID],
+        [this.CHAR_UUID]
+      )
 
-      // Now discover characteristics for all services
-      for (const service of services) {
-        const { characteristics } = await service.discoverCharacteristicsAsync()
-        console.log(`Service ${service.uuid} characteristics:`,
-                    characteristics.map((c: any) => c.uuid))
+      console.log('Found characteristics:', characteristics.map((c: any) => c.uuid))
 
-        // Look for write and notify characteristics
-        for (const char of characteristics) {
-          if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
-            console.log(`Found write characteristic: ${char.uuid}`)
-            this.writeCharacteristic = char
-          }
-          if (char.properties.includes('notify')) {
-            console.log(`Found notify characteristic: ${char.uuid}`)
-            this.notifyCharacteristic = char
-          }
-        }
-      }
+      // Find our characteristic
+      this.characteristic = characteristics.find((c: any) =>
+        c.uuid.toLowerCase().replace(/-/g, '') === this.CHAR_UUID.toLowerCase().replace(/-/g, '')
+      )
 
-      if (!this.writeCharacteristic || !this.notifyCharacteristic) {
-        console.error('Required characteristics not found')
+      if (!this.characteristic) {
+        console.error('Niimbot characteristic not found')
         return false
       }
 
+      console.log('Found Niimbot characteristic:', this.characteristic.uuid)
+
       // Subscribe to notifications
-      await this.notifyCharacteristic.subscribeAsync()
-      this.notifyCharacteristic.on('data', (data: Buffer) => {
+      await this.characteristic.subscribeAsync()
+      this.characteristic.on('data', (data: Buffer) => {
         this.handleNotification(data)
       })
 
@@ -138,8 +128,7 @@ export class BluetoothAdapter {
       try {
         await this.peripheral.disconnectAsync()
         this.peripheral = null
-        this.writeCharacteristic = null
-        this.notifyCharacteristic = null
+        this.characteristic = null
         console.log('Disconnected from printer')
       } catch (error) {
         console.error('Disconnect error:', error)
@@ -149,7 +138,7 @@ export class BluetoothAdapter {
 
   async sendData(data: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      if (!this.writeCharacteristic) {
+      if (!this.characteristic) {
         reject(new Error('Not connected'))
         return
       }
@@ -168,7 +157,7 @@ export class BluetoothAdapter {
       try {
         console.log('Sending:', data.toString('hex'))
 
-        this.writeCharacteristic.write(data, false, (error: any) => {
+        this.characteristic.write(data, false, (error: any) => {
           if (error) {
             clearTimeout(timeout)
             reject(error)
