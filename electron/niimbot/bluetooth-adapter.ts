@@ -14,9 +14,9 @@ export class BluetoothAdapter {
   private peripheralMap: Map<string, any> = new Map() // Store peripherals by ID
 
   // Niimbot Bluetooth service and characteristic UUIDs
-  private readonly SERVICE_UUID = 'ff000000100080008000805f9b34fb'
-  private readonly CHAR_WRITE_UUID = 'ff020000100080008000805f9b34fb'
-  private readonly CHAR_NOTIFY_UUID = 'ff010000100080008000805f9b34fb'
+  private readonly SERVICE_UUID = 'ff000000-1000-8000-8000-805f9b34fb'
+  private readonly CHAR_WRITE_UUID = 'ff020000-1000-8000-8000-805f9b34fb'
+  private readonly CHAR_NOTIFY_UUID = 'ff010000-1000-8000-8000-805f9b34fb'
 
   constructor() {
     try {
