@@ -24,25 +24,27 @@ export class NiimbotProtocol {
   private readonly CMD_GET_FIRMWARE = 0x3E
 
   buildPacket(command: number, data: Buffer = Buffer.alloc(0)): Buffer {
-    const length = data.length + 3
-    const packet = Buffer.alloc(length + 3)
+    // Format: [0x55, 0x55, command, size, data, checksum, 0xAA, 0xAA]
+    const packet = Buffer.alloc(6 + data.length)
 
     packet[0] = this.PACKET_START
-    packet[1] = command
-    packet[2] = data.length
+    packet[1] = this.PACKET_START  // Double start byte
+    packet[2] = command
+    packet[3] = data.length
 
     if (data.length > 0) {
-      data.copy(packet, 3)
+      data.copy(packet, 4)
     }
 
-    // Calculate checksum
-    let checksum = 0
-    for (let i = 1; i < packet.length - 2; i++) {
-      checksum ^= packet[i]
+    // Calculate checksum (XOR of command, size, and data)
+    let checksum = command ^ data.length
+    for (let i = 0; i < data.length; i++) {
+      checksum ^= data[i]
     }
 
-    packet[packet.length - 2] = checksum
-    packet[packet.length - 1] = this.PACKET_END
+    packet[packet.length - 3] = checksum
+    packet[packet.length - 2] = this.PACKET_END
+    packet[packet.length - 1] = this.PACKET_END  // Double end byte
 
     return packet
   }

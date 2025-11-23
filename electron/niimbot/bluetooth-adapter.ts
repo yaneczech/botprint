@@ -178,8 +178,9 @@ export class BluetoothAdapter {
     console.log('Received:', data.toString('hex'))
     this.responseBuffer = Buffer.concat([this.responseBuffer, data])
 
-    // Check if we have a complete response (ends with 0xAA)
-    if (this.responseBuffer.length > 0 &&
+    // Check if we have a complete response (ends with 0xAA 0xAA)
+    if (this.responseBuffer.length >= 2 &&
+        this.responseBuffer[this.responseBuffer.length - 2] === 0xAA &&
         this.responseBuffer[this.responseBuffer.length - 1] === 0xAA) {
       if (this.responseResolve) {
         this.responseResolve(this.responseBuffer)
