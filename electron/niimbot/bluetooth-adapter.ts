@@ -91,19 +91,28 @@ export class BluetoothAdapter {
       await peripheral.connectAsync()
       console.log('Connected to peripheral')
 
-      // Discover services and characteristics
-      const { characteristics } = await this.peripheral.discoverSomeServicesAndCharacteristicsAsync(
-        [this.SERVICE_UUID],
-        [this.CHAR_WRITE_UUID, this.CHAR_NOTIFY_UUID]
-      )
+      // First, discover ALL services to see what's available
+      const { services } = await this.peripheral.discoverServicesAsync()
+      console.log('Available services:', services.map((s: any) => s.uuid))
 
-      // Find write and notify characteristics
-      this.writeCharacteristic = characteristics.find((c: any) =>
-        c.uuid === this.CHAR_WRITE_UUID.replace(/-/g, '')
-      )
-      this.notifyCharacteristic = characteristics.find((c: any) =>
-        c.uuid === this.CHAR_NOTIFY_UUID.replace(/-/g, '')
-      )
+      // Now discover characteristics for all services
+      for (const service of services) {
+        const { characteristics } = await service.discoverCharacteristicsAsync()
+        console.log(`Service ${service.uuid} characteristics:`,
+                    characteristics.map((c: any) => c.uuid))
+
+        // Look for write and notify characteristics
+        for (const char of characteristics) {
+          if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
+            console.log(`Found write characteristic: ${char.uuid}`)
+            this.writeCharacteristic = char
+          }
+          if (char.properties.includes('notify')) {
+            console.log(`Found notify characteristic: ${char.uuid}`)
+            this.notifyCharacteristic = char
+          }
+        }
+      }
 
       if (!this.writeCharacteristic || !this.notifyCharacteristic) {
         console.error('Required characteristics not found')
