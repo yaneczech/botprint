@@ -111,7 +111,10 @@ export class BluetoothAdapter {
 
       // Subscribe to notifications
       await this.characteristic.subscribeAsync()
+      console.log('Subscribed to notifications')
+
       this.characteristic.on('data', (data: Buffer) => {
+        console.log('*** RAW DATA RECEIVED ***:', data.toString('hex'))
         this.handleNotification(data)
       })
 

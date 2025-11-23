@@ -43,8 +43,9 @@ export class NiimbotPrinter {
       if (success) {
         this.connected = true
         this.deviceId = deviceId
-        // Initialize printer
-        await this.sendCommand(this.protocol.buildConnectCommand())
+        console.log('Bluetooth connection established successfully')
+        // Don't send connect command - B18/N1 may not need it or may not respond
+        // Will send commands when actually needed (getInfo, print, etc.)
       }
       return success
     } catch (error) {
